@@ -85,7 +85,8 @@ public class RestClient {
 		params.add(new BasicNameValuePair(name, value));
 	}
 
-	public void execute(RequestMethod method) throws Exception {
+	public void execute(RequestMethod method)
+	    throws Exception {
 		switch (method) {
 			case GET: {
 				HttpGet request = new HttpGet(url + addGetParams());
@@ -153,7 +154,8 @@ public class RestClient {
 		return request;
 	}
 
-	public String addGetParams() throws Exception {
+	public String addGetParams()
+	    throws Exception {
 		StringBuffer combinedParams = new StringBuffer();
 		if (!params.isEmpty()) {
 			combinedParams.append("?");
