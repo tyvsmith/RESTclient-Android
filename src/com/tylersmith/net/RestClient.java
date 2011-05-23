@@ -70,7 +70,7 @@ public class RestClient {
 		params = new ArrayList<NameValuePair>();
 		headers = new ArrayList<NameValuePair>();
 	}
-
+	//Be warned that this is sent in clear text, don't use basic auth unless you have to.
 	public void addBasicAuthentication(String user, String pass) {
 		authentication = true;
 		username = user;
@@ -87,54 +87,31 @@ public class RestClient {
 
 	public void execute(RequestMethod method) throws Exception {
 		switch (method) {
-		case GET: {
-			// add parameters
-			String combinedParams = "";
-			if (!params.isEmpty()) {
-				combinedParams += "?";
-				for (NameValuePair p : params) {
-					String paramString = p.getName() + "="
-							+ URLEncoder.encode(p.getValue(), "UTF-8");
-					if (combinedParams.length() > 1) {
-						combinedParams += "&" + paramString;
-					} else {
-						combinedParams += paramString;
-					}
-				}
+			case GET: {
+				HttpGet request = new HttpGet(url + addGetParams());
+				request = (HttpGet) addHeaderParams(request);
+				executeRequest(request, url);
+				break;
 			}
-
-			HttpGet request = new HttpGet(url + combinedParams);
-
-			request = (HttpGet) addHeaderParams(request);
-
-			executeRequest(request, url);
-			break;
-		}
-		case POST: {
-			HttpPost request = new HttpPost(url);
-
-			request = (HttpPost) addHeaderParams(request);
-			request = (HttpPost) addBodyParams(request);
-
-			executeRequest(request, url);
-			break;
-		}
-		case PUT: {
-			HttpPut request = new HttpPut(url);
-
-			request = (HttpPut) addHeaderParams(request);
-			request = (HttpPut) addBodyParams(request);
-
-			executeRequest(request, url);
-			break;
-		}
-		case DELETE: {
-			HttpDelete request = new HttpDelete(url);
-
-			request = (HttpDelete) addHeaderParams(request);
-
-			executeRequest(request, url);
-		}
+			case POST: {
+				HttpPost request = new HttpPost(url);
+				request = (HttpPost) addHeaderParams(request);
+				request = (HttpPost) addBodyParams(request);
+				executeRequest(request, url);
+				break;
+			}
+			case PUT: {
+				HttpPut request = new HttpPut(url);
+				request = (HttpPut) addHeaderParams(request);
+				request = (HttpPut) addBodyParams(request);
+				executeRequest(request, url);
+				break;
+			}
+			case DELETE: {
+				HttpDelete request = new HttpDelete(url);
+				request = (HttpDelete) addHeaderParams(request);
+				executeRequest(request, url);
+			}
 		}
 	}
 
@@ -174,6 +151,19 @@ public class RestClient {
 						HTTP.UTF_8));
 		}
 		return request;
+	}
+
+	public String addGetParams() throws Exception {
+		StringBuffer combinedParams = new StringBuffer();
+		if (!params.isEmpty()) {
+			combinedParams.append("?");
+			for (NameValuePair p : params) {
+				combinedParams.append((combinedParams.length() > 1 ? "&" : "")
+						+ p.getName() + "="
+						+ URLEncoder.encode(p.getValue(), "UTF-8"));
+			}
+		}
+		return combinedParams.toString();
 	}
 
 	public String getErrorMessage() {
