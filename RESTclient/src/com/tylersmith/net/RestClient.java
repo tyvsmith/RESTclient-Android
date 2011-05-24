@@ -116,7 +116,7 @@ public class RestClient {
 		}
 	}
 
-	public HttpUriRequest addHeaderParams(HttpUriRequest request)
+	private HttpUriRequest addHeaderParams(HttpUriRequest request)
 			throws Exception {
 		for (NameValuePair h : headers) {
 			request.addHeader(h.getName(), h.getValue());
@@ -132,7 +132,7 @@ public class RestClient {
 		return request;
 	}
 
-	public HttpUriRequest addBodyParams(HttpUriRequest request)
+	private HttpUriRequest addBodyParams(HttpUriRequest request)
 			throws Exception {
 		if (jsonBody != null) {
 			request.addHeader("Content-Type", "application/json");
@@ -154,7 +154,7 @@ public class RestClient {
 		return request;
 	}
 
-	public String addGetParams()
+	private String addGetParams()
 	    throws Exception {
 		StringBuffer combinedParams = new StringBuffer();
 		if (!params.isEmpty()) {

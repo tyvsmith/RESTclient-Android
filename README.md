@@ -22,5 +22,10 @@ The code below is an example using a GET request to grab JSON from the server
 ## Contributions
 http://lukencode.com/2010/04/27/calling-web-services-in-android-using-httpclient/
 
+
+##RESTclient-Example
+This example uses a service to consume a webservice in the background and update the activity if its in use, or store the data for the next time the user is active.
+
+
 ## License
 Release under the Apache 2 license.
