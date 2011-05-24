@@ -37,7 +37,7 @@ public class WebService extends WakefulIntentService implements Runnable {
 	protected void doWakefulWork(Intent intent) {
 		context = getApplicationContext();
 		//preventing this from running unless specifically called from within the activity or through the alarm manager
-//		if(!intent.getBooleanExtra("fromApplication", false))
+		if(!intent.getBooleanExtra("fromApplication", false))
 			new Thread(this).start();
 	}
 

@@ -4,11 +4,13 @@ import java.util.ArrayList;
 
 import org.json.JSONArray;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -26,6 +28,7 @@ import com.tylersmith.webservice.service.WebService;
 
 public class Main extends ListActivity {
 
+	private Main activity;
 	private WebService webService;
 	ProgressDialog dialog;
 	ArrayList<String> data;
@@ -35,23 +38,24 @@ public class Main extends ListActivity {
 	private final int MENU_REFRESH = 0;
 
 	@Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+	public void onCreate(Bundle savedInstanceState) {
+		activity = this;
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
 
-        bindService();
-        bindList();
+		bindService();
+		bindList();
 
-    }
+	}
 
-    @Override
-    protected void onResume() {
-    	super.onResume();
+	@Override
+	protected void onResume() {
+		super.onResume();
 
-    }
+	}
 
-    private void bindService() {
-    	Intent a = new Intent(this, WebService.class);
+	private void bindService() {
+		Intent a = new Intent(this, WebService.class);
 		a.putExtra("fromApplication", true);
 		// need to use this instead of startService();
 		WakefulIntentService.sendWakefulWork(getApplicationContext(), a);
@@ -61,37 +65,42 @@ public class Main extends ListActivity {
 		// Register Broadcast Receiver
 		IntentFilter filter = new IntentFilter(WebService.WEB_INTENT_FILTER);
 		registerReceiver(myReceiver, filter);
-    }
+	}
 
-    private void bindList(){
+	private void bindList() {
 		try {
 			loadData();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-    	ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, data);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, data);
 		adapter.setNotifyOnChange(true);
 		setListAdapter(adapter);
-    }
+	}
 
 	// Using JSON since it serializes so nicely
-	// Could also create a custom adapter extended from BaseAdapter but thats outside the scope of this tutorial.
-    private void loadData() throws Exception {
-    	SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-    	JSONArray jData = new JSONArray(sp.getString(PREFS_DATA, "[]"));
+	// Could also create a custom adapter extended from BaseAdapter but thats
+	// outside the scope of this tutorial.
+	private void loadData() throws Exception {
+		SharedPreferences sp = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		JSONArray jData = new JSONArray(sp.getString(PREFS_DATA, "[]"));
 
-    	data = new ArrayList<String>();
-    	for (int index = 0; index < jData.length(); index++) {
-    		data.add(jData.getJSONObject(index).getString("from_user") + jData.getJSONObject(index).getString("text"));
-    	}
-    }
+		data = new ArrayList<String>();
+		for (int index = 0; index < jData.length(); index++) {
+			data.add(jData.getJSONObject(index).getString("from_user")
+					+ jData.getJSONObject(index).getString("text"));
+		}
+	}
 
-    private void refreshData() {
-    	if(dialog == null || !dialog.isShowing())
-    		dialog = ProgressDialog.show(Main.this, "", "Loading. Please wait...", true);
-    	new Thread(webService).start();
-    }
+	private void refreshData() {
+		if (dialog == null || !dialog.isShowing())
+			dialog = ProgressDialog.show(Main.this, "",
+					"Loading. Please wait...", true);
+		new Thread(webService).start();
+	}
 
 	private BroadcastReceiver myReceiver = new BroadcastReceiver() {
 
@@ -100,22 +109,39 @@ public class Main extends ListActivity {
 
 			Bundle extras = intent.getExtras();
 
-			boolean success = extras.getBoolean(WebService.EXTRAS_SUCCESS, false);
-			String message = extras.getString(WebService.EXTRAS_RESPONSE_MESSAGE);
+			boolean success = extras.getBoolean(WebService.EXTRAS_SUCCESS,
+					false);
+			String message = extras
+					.getString(WebService.EXTRAS_RESPONSE_MESSAGE);
 
 			if (message == null)
 				message = "There was a connection problem, please try again later";
 
-			if(success){
+			if (success) {
 				try {
 					loadData();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			} else {
-				//create error
+		        //Using a reference to the activity instead of getApplicationContext() to prevent breaking
+		        //This may keep a reference to the original and cause a memory leak
+		        //TODO: investigate further
+				AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+				builder.setMessage(message)
+						.setCancelable(false)
+						.setNeutralButton("Ok",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int id) {
+										dialog.cancel();
+									}
+								});
+
+				final AlertDialog alert = builder.create();
 			}
-			if(dialog != null && dialog.isShowing())
+			if (dialog != null && dialog.isShowing())
 				dialog.dismiss();
 		}
 	};
@@ -123,8 +149,7 @@ public class Main extends ListActivity {
 	private ServiceConnection serviceConnection = new ServiceConnection() {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			webService = ((WebService.WebBinder) service)
-					.getService();
+			webService = ((WebService.WebBinder) service).getService();
 		}
 
 		@Override
@@ -136,17 +161,17 @@ public class Main extends ListActivity {
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		menu.clear();
-        menu.add(0, MENU_REFRESH, 0, "Refresh").setIcon(
-                android.R.drawable.ic_menu_rotate);
+		menu.add(0, MENU_REFRESH, 0, "Refresh").setIcon(
+				android.R.drawable.ic_menu_rotate);
 		return true;
 	};
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()) {
-			case MENU_REFRESH: {
-				refreshData();
-			}
+		switch (item.getItemId()) {
+		case MENU_REFRESH: {
+			refreshData();
+		}
 		}
 		return super.onOptionsItemSelected(item);
 	}
