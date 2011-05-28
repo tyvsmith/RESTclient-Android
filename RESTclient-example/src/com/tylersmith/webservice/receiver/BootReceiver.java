@@ -13,8 +13,8 @@ public class BootReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		AlarmManager mgr = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
-		Intent i = new Intent(context, WebReceiver.class);
-		PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
+		Intent service = new Intent(context, WebReceiver.class);
+		PendingIntent pi = PendingIntent.getBroadcast(context, 0, service, 0);
 
 		//Updates once every two hours
 		mgr.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,

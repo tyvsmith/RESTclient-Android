@@ -55,10 +55,10 @@ public class Main extends ListActivity {
 	}
 
 	private void bindService() {
-		Intent a = new Intent(this, WebService.class);
-		a.putExtra("fromApplication", true);
+		Intent service = new Intent(this, WebService.class);
+		service.putExtra("fromApplication", true);
 		// need to use this instead of startService();
-		WakefulIntentService.sendWakefulWork(getApplicationContext(), a);
+		WakefulIntentService.sendWakefulWork(getApplicationContext(), service);
 		// Binding ..this block can also start service if not started already
 		Intent bindIntent = new Intent(this, WebService.class);
 		bindService(bindIntent, serviceConnection, Context.BIND_AUTO_CREATE);
